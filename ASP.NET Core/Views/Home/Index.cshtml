@@ -1,29 +1,258 @@
-@using ASP_NET_Core.Models
-
-<h2>Home</h2>
-
-@(Html.DevExtreme().DataGrid<SampleOrder>()
-    .ShowBorders(true)
-    .DataSource(d => d.Mvc().Controller("SampleData").LoadAction("Get").Key("OrderID"))
-    .Columns(columns => {
-        columns.AddFor(m => m.OrderID);
-        columns.AddFor(m => m.OrderDate);
-        columns.AddFor(m => m.CustomerName);
-        columns.AddFor(m => m.ShipCountry);
-        columns.AddFor(m => m.ShipCity);
-    })
-    .Paging(p => p.PageSize(10))
-    .FilterRow(f => f.Visible(true))
-    .HeaderFilter(f => f.Visible(true))
-    .GroupPanel(p => p.Visible(true))
-    .Grouping(g => g.AutoExpandAll(false))
-    .RemoteOperations(true)
-    .Summary(s => s
-        .TotalItems(totalItems => {
-            totalItems.AddFor(m => m.ShipCity).SummaryType(SummaryType.Count);
-        })
-        .GroupItems(groupItems => {
-            groupItems.Add().SummaryType(SummaryType.Count);
-        })
-    )
+@(Html.DevExtreme().Chat()
+.ID("chat")
+.User(user => user.Id("user"))
+.Height(600)
+.Width(800)
+.ReloadOnChange(false)
+.ShowAvatar(false)
+.ShowDayHeaders(false)
+.MessageTemplate(new JS("messageTemplate"))
+.OnMessageEntered("onMessageEntered")
+.OnInitialized("aiChatInitialized")
 )
+
+<script>
+    const CHAT_DISABLED_CLASS = "dx-chat-disabled";
+    const ALERT_TIMEOUT = 1000 * 60;
+    const REGENERATION_TEXT = "Regeneration...";
+    const CHAT_MESSAGEBOX_BUTTON_CLASS = 'dx-chat-messagebox-button';
+    const CHAT_MESSAGEBOX_TEXTAREA_CLASS = 'dx-chat-messagebox-textarea';
+    let instance;
+
+    async function aiChatInitialized({ component }) {
+        instance = component;
+        let messages = await getInitialMessages();
+        instance.option('dataSource', messages);
+    }
+
+    async function getInitialMessages() {
+        const response = await fetch(`Chat/GetUserMessages?userId=${instance.option('user.id')}`);
+        return await response.json();
+    }
+    async function getAIResponse(message, regenerate = false) {
+        const response = await fetch(`Chat/GetResponse?regenerate=${regenerate}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                id: message.author.id,
+                text: message.text,
+                timestamp: message.timestamp
+            })
+        });
+        return await response.json();
+    }
+
+    async function onMessageEntered({ message, event }) {
+        if (instance.option("alerts").length)
+            return;
+
+        instance.renderMessage(message);
+        toggleDisabledState(true, event);
+
+        instance.option({
+            typingUsers: [{
+                id: "assistant",
+                name: "Virtual Assistant",
+            }]
+        });
+
+        try {
+            const aiResponse = await getAIResponse(message);
+
+            setTimeout(() => {
+                instance.option({ typingUsers: [] });
+                instance.option('dataSource', aiResponse);
+            }, 200);
+        } catch (err) {
+            instance.option({ typingUsers: [] });
+            alertLimitReached();
+        } finally {
+            toggleDisabledState(false, event);
+        }
+    }
+
+    function toggleDisabledState(disabled, event) {
+        instance.element().toggleClass(CHAT_DISABLED_CLASS, disabled);
+
+        if (disabled) {
+            event?.target.blur();
+        } else {
+            event?.target.focus();
+        }
+    };
+    function alertLimitReached() {
+        instance.option({
+            alerts: [{
+                message: "Request limit reached, try again in a minute.",
+            }],
+        });
+
+        setTimeout(() => {
+            instance.option({ alerts: [] });
+        }, ALERT_TIMEOUT);
+    }
+    function convertToHtml(value) {
+        const result = unified()
+            .use(remarkParse)
+            .use(remarkRehype)
+            .use(rehypeStringify)
+            .processSync(value)
+            .toString();
+
+        return result;
+    }
+    function onCopyButtonClick(component, text) {
+        navigator.clipboard?.writeText(text);
+
+        component.option({ icon: "check" });
+
+        setTimeout(() => {
+            component.option({ icon: "copy" });
+        }, 2500);
+    }
+    async function regenerate(messages) {
+        toggleDisabledState(true);
+
+        const dataSource = instance.getDataSource();
+        const items = dataSource.items();
+        const lastMessage = items.at(-1);
+        lastMessage.author = {
+            id: "user",
+            name: "You",
+        };
+        try {
+            const aiResponse = await getAIResponse(lastMessage, true);
+            updateLastMessage(aiResponse);
+        } catch {
+            updateLastMessage(lastMessage);
+            alertLimitReached();
+        } finally {
+            toggleDisabledState(false);
+        }
+    }
+    function onRegenerateButtonClick() {
+        if (instance.option("alerts").length) {
+            return;
+        }
+
+        updateLastMessage();
+        regenerate();
+    }
+    function updateLastMessage(aiResponse) {
+        const dataSource = instance.getDataSource();
+        const items = dataSource.items();
+        const lastMessage = items.at(-1);
+        const lastMessageFromAI = aiResponse ? aiResponse.at(-1) : null;
+        const text = lastMessageFromAI ? lastMessageFromAI.text : REGENERATION_TEXT;      
+        dataSource.store().push([{
+            type: "update",
+            key: lastMessage.id,
+            data:{
+                text
+            },
+        }]);
+    }
+    function renderMessageContent(message, element) {
+        $("<div>")
+            .addClass("dx-chat-messagebubble-text")
+            .html(convertToHtml(message.text))
+            .appendTo(element);
+
+        const $buttonContainer = $("<div>")
+            .addClass("dx-bubble-button-container");
+
+        $("<div>").dxButton({
+            icon: "copy",
+            stylingMode: "text",
+            hint: "Copy",
+            onClick: ({ component }) => {
+                onCopyButtonClick(component, message.text);
+            },
+        })
+            .appendTo($buttonContainer);
+
+        $("<div>").dxButton({
+            icon: "refresh",
+            stylingMode: "text",
+            hint: "Regenerate",
+            onClick: onRegenerateButtonClick,
+        })
+            .appendTo($buttonContainer);
+
+        $buttonContainer.appendTo(element);
+    }
+    function messageTemplate(data, element) {
+        const { message } = data;
+
+        if (message.text === REGENERATION_TEXT) {
+            element.text(REGENERATION_TEXT);
+            return;
+        }
+
+        renderMessageContent(message, element)
+    }
+</script>
+<style>
+    .container {
+        display: flex;
+        justify-content: center;
+    }
+
+    .dx-chat {
+        max-width: 900px !important;
+    }
+
+    .dx-chat-messagelist-empty-image {
+        display: none;
+    }
+
+    .dx-chat-messagelist-empty-message {
+        font-size: var(--dx-font-size-heading-5);
+    }
+
+    .dx-chat-messagebubble-content,
+    .dx-chat-messagebubble-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .dx-bubble-button-container {
+        display: none;
+    }
+
+    .dx-button {
+        display: inline-block;
+        color: var(--dx-color-icon);
+    }
+
+    .dx-chat-messagegroup-alignment-start:last-child .dx-chat-messagebubble:last-child .dx-bubble-button-container {
+        display: flex;
+        gap: 4px;
+        margin-top: 8px;
+    }
+
+    .dx-chat-messagebubble-content>div>p:first-child {
+        margin-top: 0;
+    }
+
+    .dx-chat-messagebubble-content>div>p:last-child {
+        margin-bottom: 0;
+    }
+
+    .dx-chat-messagebubble-content ol,
+    .dx-chat-messagebubble-content ul {
+        white-space: normal;
+    }
+
+    .dx-chat-messagebubble-content h1,
+    .dx-chat-messagebubble-content h2,
+    .dx-chat-messagebubble-content h3,
+    .dx-chat-messagebubble-content h4,
+    .dx-chat-messagebubble-content h5,
+    .dx-chat-messagebubble-content h6 {
+        font-size: revert;
+        font-weight: revert;
+    }
+</style>
