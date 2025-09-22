@@ -6,7 +6,6 @@ namespace ASP_NET_Core.Models
     {
         public string? timestamp { get; set; }
         
-        // Common properties
         public string text { get; set; }
         public string id { get; set; }
         
