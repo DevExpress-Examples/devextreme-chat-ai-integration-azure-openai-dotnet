@@ -1,20 +1,29 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace ASP_NET_Core.Models
 {
     public class ClientChatMessage
     {
-        public string? timestamp { get; set; }
-        
-        public string text { get; set; }
-        public string id { get; set; }
-        
-        public ChatAuthor? author { get; set; }
+        [JsonPropertyName("timestamp")]
+        public string? Timestamp { get; set; }
+       
+        [JsonPropertyName("text")]
+        public string Text { get; set; }
+       
+        [JsonPropertyName("id")]    
+        public string Id { get; set; }
+
+        [JsonPropertyName("author")]
+        public ChatAuthor? Author { get; set; }
     }
 
     public class ChatAuthor
     {
-        public string id { get; set; }
-        public string name { get; set; }
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
     }
 }

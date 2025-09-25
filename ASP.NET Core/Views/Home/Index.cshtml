@@ -8,7 +8,7 @@
 .ShowDayHeaders(false)
 .MessageTemplate(new JS("messageTemplate"))
 .OnMessageEntered("onMessageEntered")
-.OnInitialized("aiChatInitialized")
+.OnInitialized("onInitialized")
 )
 
 <script>
@@ -17,64 +17,70 @@
     const REGENERATION_TEXT = "Regeneration...";
     const CHAT_MESSAGEBOX_BUTTON_CLASS = 'dx-chat-messagebox-button';
     const CHAT_MESSAGEBOX_TEXTAREA_CLASS = 'dx-chat-messagebox-textarea';
-    let instance;
+    const assistant = {
+        id: "assistant",
+        name: "Virtual Assistant",
+    }
 
-    async function aiChatInitialized({ component }) {
-        instance = component;
-        let messages = await getInitialMessages();
-        instance.option('dataSource', messages);
+    async function onInitialized({ component }) {
+        const messages = await getInitialMessages();
+        component.option('dataSource', new DevExpress.data.DataSource({
+            store: new DevExpress.data.ArrayStore({
+                key: "id",
+                data: messages
+            }),
+            paginate: false,
+        }));
     }
 
     async function getInitialMessages() {
-        const response = await fetch(`Chat/GetUserMessages?userId=${instance.option('user.id')}`);
+        const response = await fetch('Chat/GetUserMessages');
         return await response.json();
     }
     async function getAIResponse(message, regenerate = false) {
-        const response = await fetch(`Chat/GetResponse?regenerate=${regenerate}`, {
+        const response = await fetch(`Chat/GetAIResponse?regenerate=${regenerate}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                id: message.author.id,
-                text: message.text,
-                timestamp: message.timestamp
-            })
+            body: JSON.stringify(message)
         });
         return await response.json();
     }
 
-    async function onMessageEntered({ message, event }) {
-        if (instance.option("alerts").length)
+    async function onMessageEntered(e) {
+        const { component, message, event } = e;
+        if (component.option("alerts").length)
             return;
+        message.id = Date.now().toString();
+        if (!message.timestamp) {
+            message.timestamp = new Date().toISOString();
+        }
+        component.renderMessage(message);
+        toggleDisabledState(component,true, event);
 
-        instance.renderMessage(message);
-        toggleDisabledState(true, event);
-
-        instance.option({
-            typingUsers: [{
-                id: "assistant",
-                name: "Virtual Assistant",
-            }]
+        component.option({
+            typingUsers: [assistant]
         });
 
         try {
-            const aiResponse = await getAIResponse(message);
-
+            const aiMessage = await getAIResponse(message);
             setTimeout(() => {
-                instance.option({ typingUsers: [] });
-                instance.option('dataSource', aiResponse);
+                component.option({ typingUsers: [] });
+                const dataSource = component.getDataSource();
+                dataSource.store().push([{ type: 'insert', data: aiMessage }]);
             }, 200);
         } catch (err) {
-            instance.option({ typingUsers: [] });
-            alertLimitReached();
+            component.option({ typingUsers: [] });
+            alertLimitReached(component);
         } finally {
-            toggleDisabledState(false, event);
+            toggleDisabledState(component, false, event);
         }
     }
 
-    function toggleDisabledState(disabled, event) {
-        instance.element().toggleClass(CHAT_DISABLED_CLASS, disabled);
+    function toggleDisabledState(chat, disabled, event) {
+
+        chat.element().toggleClass(CHAT_DISABLED_CLASS, disabled);
 
         if (disabled) {
             event?.target.blur();
@@ -82,15 +88,15 @@
             event?.target.focus();
         }
     };
-    function alertLimitReached() {
-        instance.option({
+    function alertLimitReached(chat) {
+        chat.option({
             alerts: [{
                 message: "Request limit reached, try again in a minute.",
             }],
         });
 
         setTimeout(() => {
-            instance.option({ alerts: [] });
+            chat.option({ alerts: [] });
         }, ALERT_TIMEOUT);
     }
     function convertToHtml(value) {
@@ -112,49 +118,44 @@
             component.option({ icon: "copy" });
         }, 2500);
     }
-    async function regenerate(messages) {
-        toggleDisabledState(true);
+    async function regenerate(chat) {
 
-        const dataSource = instance.getDataSource();
+        const dataSource = chat.getDataSource();
         const items = dataSource.items();
         const lastMessage = items.at(-1);
-        lastMessage.author = {
-            id: "user",
-            name: "You",
-        };
+        toggleDisabledState(chat, true);
         try {
-            const aiResponse = await getAIResponse(lastMessage, true);
-            updateLastMessage(aiResponse);
+            const aiMessage = await getAIResponse(lastMessage, true);
+            updateLastMessage(chat, aiMessage);
         } catch {
-            updateLastMessage(lastMessage);
-            alertLimitReached();
+            updateLastMessage(chat, lastMessage);
+            alertLimitReached(chat);
         } finally {
-            toggleDisabledState(false);
+            toggleDisabledState(chat, false);
         }
     }
-    function onRegenerateButtonClick() {
-        if (instance.option("alerts").length) {
+    function onRegenerateButtonClick(chat) {
+        if (chat.option("alerts").length) {
             return;
         }
 
-        updateLastMessage();
-        regenerate();
+        updateLastMessage(chat);
+        regenerate(chat);
     }
-    function updateLastMessage(aiResponse) {
-        const dataSource = instance.getDataSource();
+    function updateLastMessage(chat, aiMessage) {
+        const dataSource = chat.getDataSource();
         const items = dataSource.items();
         const lastMessage = items.at(-1);
-        const lastMessageFromAI = aiResponse ? aiResponse.at(-1) : null;
-        const text = lastMessageFromAI ? lastMessageFromAI.text : REGENERATION_TEXT;      
+        const text = aiMessage ? aiMessage.text : REGENERATION_TEXT;
         dataSource.store().push([{
             type: "update",
             key: lastMessage.id,
-            data:{
+            data: {
                 text
             },
         }]);
     }
-    function renderMessageContent(message, element) {
+    function renderMessageContent(chat, message, element) {
         $("<div>")
             .addClass("dx-chat-messagebubble-text")
             .html(convertToHtml(message.text))
@@ -177,26 +178,26 @@
             icon: "refresh",
             stylingMode: "text",
             hint: "Regenerate",
-            onClick: onRegenerateButtonClick,
+            onClick: () => onRegenerateButtonClick(chat),
         })
             .appendTo($buttonContainer);
 
         $buttonContainer.appendTo(element);
     }
     function messageTemplate(data, element) {
-        const { message } = data;
+        const { message, component } = data;
 
         if (message.text === REGENERATION_TEXT) {
             element.text(REGENERATION_TEXT);
             return;
         }
 
-        renderMessageContent(message, element)
+        renderMessageContent(component, message, element)
     }
 </script>
 <style>
-   #chat {
-        max-width: 900px !important;
+    #chat {
+        max-width: 900px;
     }
 
     .dx-chat-messagelist-empty-image {

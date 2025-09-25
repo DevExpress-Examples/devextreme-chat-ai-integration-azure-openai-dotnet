@@ -6,34 +6,43 @@ using System;
 using ASP_NET_Core.Models;
 
 public class DataService {
-    protected ISession _session;
+    private const string ChatKey = "ChatHistory";
+    private readonly ISession _session;
     public DataService(IHttpContextAccessor accessor) {
         _session = accessor.HttpContext.Session;
     }
-    public List<ChatMessage> AddMessage(string userId, ClientChatMessage message) {
-        var msg = new ChatMessage(ChatRole.User, message.text) {
-            CreatedAt = DateTime.Parse(message.timestamp)
+    public List<ChatMessage> AddUserMessage(ClientChatMessage message) {
+        var createdAt = message.Timestamp != null ? DateTime.Parse(message.Timestamp) : DateTime.UtcNow;
+        var msg = new ChatMessage(ChatRole.User, message.Text) {
+            CreatedAt = createdAt,
+            MessageId = message.Id,
         };
-        return AddMessage(userId, msg);
+        return AddMessage(msg);
     }
-    public List<ChatMessage> AddMessage(string userId, ChatMessage message) {
-        var userMessages = GetMessages(userId);
-        userMessages.Add(message);
-        SetMessages(userId, userMessages);
-        return userMessages;
+    public List<ChatMessage> AddMessage(ChatMessage message) {
+        var messages = GetMessages();
+        messages.Add(message);
+        SetMessages(messages);
+        return messages;
     }
-    public List<ChatMessage> RemoveLastMessage(string userId) {
-        var userMessages = GetMessages(userId);
-        if(userMessages.Count > 0)
-            userMessages.RemoveAt(userMessages.Count - 1);
-        SetMessages(userId, userMessages);
-        return userMessages;
+    public List<ChatMessage> AddSystemMessage(ChatMessage message) {
+        if(message.CreatedAt == null) 
+          message.CreatedAt = DateTime.UtcNow;
+    if(string.IsNullOrEmpty(message.MessageId))
+       message.MessageId = Guid.NewGuid().ToString("N");
+        return AddMessage(message);
     }
-    public List<ChatMessage> GetMessages(string userId) =>
-        _session.Get<List<ChatMessage>>(userId) ?? new List<ChatMessage>();    
-    protected void SetMessages(string userId, List<ChatMessage> messages) => 
-        _session.Set(userId, messages);
-    
+    public List<ChatMessage> RemoveLastMessage() {
+        var messages = GetMessages();
+        if(messages.Count > 0)
+            messages.RemoveAt(messages.Count - 1);
+        SetMessages(messages);
+        return messages;
+    }
+    public List<ChatMessage> GetMessages() =>
+        _session.Get<List<ChatMessage>>(ChatKey) ?? new List<ChatMessage>();
+    private void SetMessages(List<ChatMessage> messages) => 
+        _session.Set(ChatKey, messages);
 }
 public static class SessionExtensions {
     public static void Set<T>(this ISession session, string key, T value) {

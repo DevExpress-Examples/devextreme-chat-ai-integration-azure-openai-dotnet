@@ -14,34 +14,30 @@ public class ChatController : Controller {
     }
     
     [HttpPost]
-    public async Task<IActionResult> GetResponse([FromBody] ClientChatMessage message, [FromQuery] bool regenerate = false) {        
-        var userId = message.id;
-        List<ChatMessage> messages;
-        if(regenerate) {
-            messages = _dataService.RemoveLastMessage(userId);
-        }
-        else
-          messages = _dataService.AddMessage(userId, message);
+    public async Task<IActionResult> GetAIResponse([FromBody] ClientChatMessage message, [FromQuery] bool regenerate = false) {   
+        List<ChatMessage> messages = regenerate
+            ? _dataService.RemoveLastMessage()
+            : _dataService.AddUserMessage(message);
         var response = await _chatClient.GetResponseAsync(messages);
-        var result = _dataService.AddMessage(userId,  response.Messages[0]);
-        return Json(ToClientMessages(result));
+        var updatedMessages = _dataService.AddSystemMessage(response.Messages[0]);
+        var lastMessage = updatedMessages[^1];
+        return Json(ToClientMessage(lastMessage));
     }
 
     [HttpGet]
-    public IActionResult GetUserMessages(string userId) {
-        var result = _dataService.GetMessages(userId);
+    public IActionResult GetUserMessages() {
+        var result = _dataService.GetMessages();
         return Json(ToClientMessages(result));
     }
 
-    protected IEnumerable<ClientChatMessage> ToClientMessages(List<ChatMessage> messages) {
-        return messages.Select(m => new ClientChatMessage {
-            author = new ChatAuthor { 
-                id = m.Role.Value, 
-                name = m.Role == ChatRole.User ? "You" : "Virtual Assistant" 
-            },
-            id = m.MessageId,
-            text = m.Text,
-            timestamp = m.CreatedAt?.ToUniversalTime().ToString("o")
-        });
-    }
+    protected IEnumerable<ClientChatMessage> ToClientMessages(List<ChatMessage> messages) => messages.Select(ToClientMessage);
+    protected ClientChatMessage ToClientMessage(ChatMessage m) => new ClientChatMessage {
+        Author = new ChatAuthor {
+            Id = m.Role.Value,
+            Name = m.Role == ChatRole.User ? "You" : "Virtual Assistant"
+        },
+        Id = m.MessageId,
+        Text = m.Text,
+        Timestamp = m.CreatedAt?.ToUniversalTime().ToString("o")
+    };
 }
