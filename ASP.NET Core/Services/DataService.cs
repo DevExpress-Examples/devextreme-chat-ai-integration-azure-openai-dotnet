@@ -28,8 +28,8 @@ public class DataService {
     public List<ChatMessage> AddAssistantMessage(ChatMessage message) {
         if(message.CreatedAt == null) 
           message.CreatedAt = DateTime.UtcNow;
-    if(string.IsNullOrEmpty(message.MessageId))
-       message.MessageId = Guid.NewGuid().ToString("N");
+        if(string.IsNullOrEmpty(message.MessageId))
+            message.MessageId = Guid.NewGuid().ToString("N");
         return AddMessage(message);
     }
     public List<ChatMessage> RemoveLastMessage() {
