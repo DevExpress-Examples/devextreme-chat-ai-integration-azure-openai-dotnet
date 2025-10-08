@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 <html>
+
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
@@ -16,7 +17,28 @@
 
     <link rel="stylesheet" href="~/css/vendor.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Site.css" />
-    <script src="~/js/vendor.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="js/vendor.js" asp-append-version="true"></script>
+    <script type="module">
+        import { unified } from "https://esm.sh/unified@11?bundle";
+        import remarkParse from "https://esm.sh/remark-parse@11?bundle";
+        import remarkRehype from "https://esm.sh/remark-rehype@11?bundle";
+        import rehypeStringify from "https://esm.sh/rehype-stringify@10?bundle";
+        import rehypeMinifyWhitespace from "https://esm.sh/rehype-minify-whitespace@6?bundle";
+        window.unified = unified;
+        window.remarkParse = remarkParse;
+        window.remarkRehype = remarkRehype;
+        window.rehypeStringify = rehypeStringify; 
+        window.rehypeMinifyWhitespace = rehypeMinifyWhitespace;
+    </script>
+    <script>          
+        DevExpress.localization.loadMessages({
+            en: {
+                'dxChat-emptyListMessage': 'Chat is Empty',
+                'dxChat-emptyListPrompt': 'AI Assistant is ready to answer your questions.',
+                'dxChat-textareaPlaceholder': 'Ask AI Assistant...',
+            },
+        });
+    </script>
 </head>
 
 <body class="dx-viewport">
