@@ -25,7 +25,7 @@ public class DataService {
         SetMessages(messages);
         return messages;
     }
-    public List<ChatMessage> AddSystemMessage(ChatMessage message) {
+    public List<ChatMessage> AddAssistantMessage(ChatMessage message) {
         if(message.CreatedAt == null) 
           message.CreatedAt = DateTime.UtcNow;
     if(string.IsNullOrEmpty(message.MessageId))

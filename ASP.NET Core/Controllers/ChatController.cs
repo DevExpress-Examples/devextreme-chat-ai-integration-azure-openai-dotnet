@@ -19,7 +19,7 @@ public class ChatController : Controller {
             ? _dataService.RemoveLastMessage()
             : _dataService.AddUserMessage(message);
         var response = await _chatClient.GetResponseAsync(messages);
-        var updatedMessages = _dataService.AddSystemMessage(response.Messages[0]);
+        var updatedMessages = _dataService.AddAssistantMessage(response.Messages[0]);
         var lastMessage = updatedMessages[^1];
         return Json(ToClientMessage(lastMessage));
     }
