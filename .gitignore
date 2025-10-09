@@ -308,3 +308,9 @@ TesterMetadata.xml
 
 !*/wwwroot/css/Site.css
 *.DS_Store
+
+# Credentials and API keys - Do not commit!
+appsettings.json
+appsettings.*.json
+!appsettings.Development.json
+NuGet.config
