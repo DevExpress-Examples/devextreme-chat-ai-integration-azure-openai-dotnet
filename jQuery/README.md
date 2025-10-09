@@ -1,28 +1,33 @@
-# jQuery DevExtreme Example
+# jQuery Chat Application with ChatServer Integration
 
-For more information about this example check the [Readme](../README.md).
+A jQuery application that uses the DevExtreme Chat widget to communicate with the .NET ChatServer API powered by Azure OpenAI.
 
-## Build and Lint
+## Quick Start
 
-Install dependencies:
-```sh
+**Prerequisites:** ChatServer must be running on port 5005
+
+```bash
+# Install dependencies (first time only)
 npm install
+
+# Start the application
+npm run start
 ```
 
-Start dev server:
-```sh
-npm start
-```
-App URL: http://localhost:5050/src/index.html
+## Development
 
 Run linter:
 ```sh
 npm run lint
 ```
 
-## Further help
+## Further Help
 
-jQuery docs: https://api.jquery.com/
-DevExtreme docs: https://js.devexpress.com/jQuery/Documentation
+- jQuery docs: https://api.jquery.com/
+- DevExtreme docs: https://js.devexpress.com/jQuery/Documentation
+- Support: https://supportcenter.devexpress.com/ticket/create
 
-To get more help with DevExtreme, submit a ticket through the [Support Center](https://supportcenter.devexpress.com/ticket/create).
+## Related Projects
+
+- **ChatServer** - .NET 9 API backend (port 5005)
+
