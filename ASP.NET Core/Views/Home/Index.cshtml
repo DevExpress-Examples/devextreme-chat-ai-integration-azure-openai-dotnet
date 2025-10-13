@@ -12,7 +12,7 @@
 )
 
 <script>
-    const CHAT_DISABLED_CLASS = "dx-chat-disabled";
+    const CHAT_DISABLED_CLASS = "chat-disabled";
     const ALERT_TIMEOUT = 1000 * 60;
     const REGENERATION_TEXT = "Regeneration...";
     const CHAT_MESSAGEBOX_BUTTON_CLASS = 'dx-chat-messagebox-button';
@@ -196,8 +196,14 @@
     }
 </script>
 <style>
-    #chat {
-        max-width: 900px;
+
+    .demo-container {
+        display: flex;
+        justify-content: center;
+    }
+
+    .dx-chat {
+        max-width: 900px !important;
     }
 
     .dx-chat-messagelist-empty-image {
@@ -229,11 +235,11 @@
         margin-top: 8px;
     }
 
-    .dx-chat-messagebubble-content>div>p:first-child {
+    .dx-chat-messagebubble-content > div > p:first-child {
         margin-top: 0;
     }
 
-    .dx-chat-messagebubble-content>div>p:last-child {
+    .dx-chat-messagebubble-content > div > p:last-child {
         margin-bottom: 0;
     }
 
@@ -250,5 +256,10 @@
     .dx-chat-messagebubble-content h6 {
         font-size: revert;
         font-weight: revert;
+    }
+
+    .chat-disabled .dx-chat-messagebox {
+        opacity: 0.5;
+        pointer-events: none;
     }
 </style>

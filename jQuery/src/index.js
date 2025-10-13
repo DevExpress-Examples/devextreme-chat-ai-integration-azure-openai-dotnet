@@ -1,5 +1,5 @@
 $(() => {
-  const CHAT_DISABLED_CLASS = 'dx-chat-disabled';
+  const CHAT_DISABLED_CLASS = 'chat-disabled';
   const ALERT_TIMEOUT = 1000 * 60;
   const REGENERATION_TEXT = 'Regeneration...';
   const CHAT_SERVER_URL = 'http://localhost:5005/api/Chat';

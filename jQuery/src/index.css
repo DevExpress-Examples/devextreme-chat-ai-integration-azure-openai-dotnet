@@ -1,5 +1,7 @@
 .demo-container {
-    margin: 50px;
+    display: flex;
+    justify-content: center;
+    margin: 20px;
     width: 90vw;
 }
 
@@ -57,4 +59,9 @@
 .dx-chat-messagebubble-content h6 {
     font-size: revert;
     font-weight: revert;
+}
+
+.chat-disabled .dx-chat-messagebox {
+    opacity: 0.5;
+    pointer-events: none;
 }
