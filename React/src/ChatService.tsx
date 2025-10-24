@@ -63,7 +63,7 @@ class AppService {
         return [];
       }
       return await response.json() as Message[];
-    } catch (err) {
+    } catch (err: Error) {
       notify(`Error fetching initial messages: ${err.message}`, 'error', 1000);
       return [];
     }
@@ -83,7 +83,7 @@ class AppService {
     return this.dataSource;
   }
 
-  async getAIResponse(message, shouldRegenerate = false): Promise<any> {
+  async getAIResponse(message: Message, shouldRegenerate = false): Promise<any> {
     const response = await fetch(
       `${CHAT_SERVER_URL}/GetAIResponse?regenerate=${shouldRegenerate}`,
       {
@@ -102,11 +102,11 @@ class AppService {
     return response.json();
   }
 
-  updateLastMessage(message = null): void {
+  updateLastMessage(message: Message | null = null): void {
     const items = this.dataSource?.items();
     const lastMessage = items?.slice(-1)[0];
     const text = {
-      text: message ? message.text : REGENERATION_TEXT,
+      text: message ? message?.text : REGENERATION_TEXT,
     };
     this.dataSource?.store().push([{ type: 'remove', key: lastMessage.id }, {
       type: 'insert',
