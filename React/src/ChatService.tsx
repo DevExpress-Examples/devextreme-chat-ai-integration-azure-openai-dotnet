@@ -7,12 +7,12 @@ import {
 } from './data.ts';
 
 interface MessageAuthor {
-  id: string;
+  id: string | number | undefined;
   name: string;
 }
 
 interface Message {
-  id: string;
+  id: string | number | undefined;
   text: string;
   timestamp: string; // или Date если будете парсить
   author: MessageAuthor;
@@ -64,7 +64,8 @@ class AppService {
       }
       return await response.json() as Message[];
     } catch (err: unknown) {
-      notify(`Error fetching initial messages: ${err.message}`, 'error', 1000);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      notify(`Error fetching initial messages: ${errorMessage}`, 'error', 1000);
       return [];
     }
   }
