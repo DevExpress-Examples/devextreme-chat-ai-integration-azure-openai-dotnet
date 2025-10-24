@@ -63,7 +63,7 @@ class AppService {
         return [];
       }
       return await response.json() as Message[];
-    } catch (err: Error) {
+    } catch (err: unknown) {
       notify(`Error fetching initial messages: ${err.message}`, 'error', 1000);
       return [];
     }
