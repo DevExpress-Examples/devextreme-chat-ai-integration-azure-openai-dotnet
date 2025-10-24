@@ -7,15 +7,15 @@ import {
 } from './data.ts';
 
 interface MessageAuthor {
-  id: string | number | undefined;
-  name: string;
+  id?: string | number | undefined;
+  name?: string;
 }
 
 interface Message {
   id?: string | number | undefined;
-  text: string;
-  timestamp: string; // или Date если будете парсить
-  author: MessageAuthor;
+  text?: string;
+  timestamp?: string; // или Date если будете парсить
+  author?: MessageAuthor;
 }
 
 class AppService {
