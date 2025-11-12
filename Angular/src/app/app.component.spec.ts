@@ -1,15 +1,50 @@
 import { TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { of } from 'rxjs';
+import DataSource from 'devextreme/data/data_source';
+import { DxButtonModule } from 'devextreme-angular/ui/button';
+import { DxChatModule } from 'devextreme-angular/ui/chat';
+import { DxTemplateModule } from 'devextreme-angular/core';
 import { AppComponent } from './app.component';
+import { MessageTemplateComponent } from './components/message-template/message-template.component';
+import { ChatService } from './services/chat.service';
+
+class ChatServiceStub {
+  typingUsers$ = of([]);
+
+  alerts$ = of([]);
+
+  initDataSource = jasmine
+    .createSpy('initDataSource')
+    .and.returnValue(Promise.resolve({} as DataSource));
+
+  onMessageEntered = jasmine
+    .createSpy('onMessageEntered')
+    .and.returnValue(Promise.resolve());
+
+  updateLastMessage = jasmine.createSpy('updateLastMessage');
+
+  regenerate = jasmine
+    .createSpy('regenerate')
+    .and.returnValue(Promise.resolve());
+}
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule,
+        DxButtonModule,
+        DxChatModule,
+        DxTemplateModule,
       ],
       declarations: [
         AppComponent,
+        MessageTemplateComponent,
+      ],
+      providers: [
+        {
+          provide: ChatService,
+          useClass: ChatServiceStub,
+        },
       ],
     }).compileComponents();
   });
@@ -18,18 +53,5 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
-  });
-
-  it('should have as title \'angular-test\'', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('angular-test');
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('angular-test app is running!');
   });
 });
