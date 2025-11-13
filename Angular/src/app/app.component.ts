@@ -4,9 +4,7 @@ import { type DxChatTypes } from 'devextreme-angular/ui/chat';
 import { DataSource } from 'devextreme-angular/common/data';
 import { loadMessages } from 'devextreme/localization';
 import { AppService } from './app.service';
-import {
-  ALERT_TIMEOUT, assistant, CHAT_SERVER_URL, REGENERATION_TEXT,
-} from './data';
+import { REGENERATION_TEXT } from './data';
 
 @Component({
   selector: 'app-root',
