@@ -1,28 +1,22 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 
 import 'devextreme/dist/css/dx.material.blue.light.compact.css';
-import DxButton from 'devextreme-vue/button';
+import Chat from '@/components/ChatInterface.vue';
 
-const props = defineProps({
-  text: {
-    type: String,
-    default: 'count',
-  },
-});
-const count = ref(0);
-const buttonText = computed<string>(
-  () => `Click ${props.text}: ${count.value}`
-);
-function clickHandler() {
-  count.value += 1;
-}
 </script>
 <template>
-  <div>
-    <DxButton
-      :text="buttonText"
-      @click="clickHandler"
-    />
+  <div class="chat-wrapper">
+    <Chat/>
   </div>
 </template>
+<style scoped>
+
+.chat-wrapper {
+  width: 100%;
+  max-width: 900px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+</style>
