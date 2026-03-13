@@ -101,7 +101,7 @@ The server will start on:
 
 ## CORS Policy
 
-The server allows all methods and headers. This configuration is intended for development purposes. For production, update the CORS policy in `Program.cs` to restrict allowed origins.
+The server allows all HTTP methods and headers for requests coming from `http://localhost:5050`, as configured in `Program.cs` using `WithOrigins("http://localhost:5050")`. This configuration is intended for development purposes: client applications must either be served from `http://localhost:5050` or you must update the CORS policy in `Program.cs` to add or change the allowed origin(s). For production, restrict the allowed origins in `Program.cs` to only the specific domains that should be able to access the API.
 
 ## Session Management
 
