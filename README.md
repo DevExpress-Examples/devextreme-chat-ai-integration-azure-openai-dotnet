@@ -4,9 +4,9 @@
 [![](https://img.shields.io/badge/📖_How_to_use_DevExpress_Examples-e9f6fc?style=flat-square)](https://docs.devexpress.com/GeneralInformation/403183)
 [![](https://img.shields.io/badge/💬_Leave_Feedback-feecdd?style=flat-square)](#does-this-example-address-your-development-requirementsobjectives)
 <!-- default badges end -->
-# DevExtreme Chat - Integration with Azure OpenAI (.NET)
+# DevExtreme Chat - Azure OpenAI (.NET) Integration
 
-This example integrates the [DevExtreme Chat](https://js.devexpress.com/Documentation/Guide/UI_Components/Chat/Overview/) UI component with an AI assistant powered by [Azure OpenAI](https://azure.microsoft.com/en-us/pricing/details/azure-openai/) using a minimal ASP.NET Web API backend.
+This example integrates the [DevExtreme Chat](https://js.devexpress.com/Documentation/Guide/UI_Components/Chat/Overview/) UI component with an [Azure OpenAI](https://azure.microsoft.com/en-us/pricing/details/azure-openai/) assistant using a minimal ASP.NET Web API backend.
 
 ![Example image](images/chat.png)
 
