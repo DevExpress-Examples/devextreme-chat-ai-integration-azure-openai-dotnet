@@ -1,15 +1,11 @@
 # ChatServer
 
-A .NET 9 Web API project that provides chat endpoints powered by Azure OpenAI.
-
-## Overview
-
-This is a minimal API-only server that handles chat functionality using Azure OpenAI. It provides RESTful endpoints for sending messages and retrieving chat history.
+ChatServer is a .NET API-only Web API that exposes REST endpoints for sending messages and retrieving chat history. It is powered by [Azure OpenAI](https://azure.microsoft.com/en-us/pricing/details/azure-openai/).
 
 ## Features
 
 - **API-only architecture** - No Views or static files
-- **Azure OpenAI integration** - Uses Microsoft.Extensions.AI for chat completions
+- **Azure OpenAI integration** - Uses `Microsoft.Extensions.AI` for [chat completions](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/chatgpt?tabs=python-secure%2Cdotnet-secure&pivots=programming-language-dotnet)
 - **Session-based chat history** - Maintains conversation context per session
 - **CORS enabled** - Allows cross-origin requests from client applications
 - **Port 5005** - Runs on HTTP port 5005 and HTTPS port 5006
@@ -21,15 +17,19 @@ ChatServer/
 ├── Configuration/
 │   └── AzureOpenAIOptions.cs    # Azure OpenAI configuration options
 ├── Controllers/
-│   └── ChatController.cs        # API endpoints for chat operations
+│   └── ChatController.cs        # API endpoints for Chat operations
 ├── Models/
-│   └── ClientChatMessage.cs     # Chat message DTOs
+│   └── ClientChatMessage.cs     # Chat message model for client requests
 ├── Services/
 │   └── DataService.cs           # Session-based message storage
 ├── Program.cs                   # Application startup and configuration
 ├── appsettings.json             # Application settings
 └── ChatServer.csproj            # Project file
 ```
+
+## Prerequisites
+
+- [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 
 ## API Endpoints
 
@@ -46,7 +46,7 @@ Sends a message to Azure OpenAI and returns the AI response.
 ```
 
 **Query Parameters:**
-- `regenerate` (bool, optional): If true, removes the last message and regenerates response
+- `regenerate` (bool, optional): If true, removes the last message and regenerates the response
 
 **Response:**
 ```json
@@ -93,7 +93,7 @@ Update `appsettings.json` with your Azure OpenAI credentials:
 }
 ```
 
-## Running the Server
+## Run the Server
 
 ```bash
 dotnet run
@@ -103,11 +103,10 @@ The server will start on:
 - HTTP: http://localhost:5005
 - HTTPS: https://localhost:5006
 
-
 ## CORS Policy
 
-The server allows all methods, and headers. This is configured for development purposes. For production, update the CORS policy in `Program.cs` to restrict allowed origins.
+The server allows all HTTP methods and headers for requests from `http://localhost:5050`, as configured in [Program.cs](Program.cs#L49). This configuration is for development purposes only - client applications must communicate with `http://localhost:5050` or you must update the CORS policy in `Program.cs` to change allowed origin(s). For production, restrict allowed origins in `Program.cs` to specific domains.
 
 ## Session Management
 
-Chat history is stored in session storage with a 15-minute idle timeout. Sessions are automatically cleaned up after timeout.
+Chat history is stored in session storage with a 15-minute idle timeout. Sessions are automatically cleaned up after idle timeout expires.
