@@ -16,10 +16,12 @@ jobs:
     timeout-minutes: 60
     steps:
     - name: Get sources
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Use Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
 
     - name: Restore npm cache
       uses: actions/cache@v3
@@ -30,7 +32,12 @@ jobs:
 
     - name: Run npm install
       working-directory: Angular
-      run: npm install --no-audit --no-fund
+      run: npm install --no-fund
+
+    - name: Security audit
+      working-directory: Angular
+      run: npm audit --audit-level=high
+      continue-on-error: true
 
     - name: Lint Angular
       working-directory: Angular
@@ -43,10 +50,12 @@ jobs:
     timeout-minutes: 60
     steps:
     - name: Get sources
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Use Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
 
     - name: Restore npm cache
       uses: actions/cache@v3
@@ -57,7 +66,12 @@ jobs:
 
     - name: Run npm install
       working-directory: jQuery
-      run: npm install --no-audit --no-fund
+      run: npm install --no-fund
+
+    - name: Security audit
+      working-directory: jQuery
+      run: npm audit --audit-level=high
+      continue-on-error: true
 
     - name: Lint jQuery
       working-directory: jQuery
@@ -70,7 +84,7 @@ jobs:
     timeout-minutes: 60
     steps:
     - name: Get sources
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Use Node.js
       uses: actions/setup-node@v4
@@ -86,7 +100,12 @@ jobs:
 
     - name: Run npm install
       working-directory: React
-      run: npm install --no-audit --no-fund
+      run: npm install --no-fund
+
+    - name: Security audit
+      working-directory: React
+      run: npm audit --audit-level=high
+      continue-on-error: true
 
     - name: Lint React
       working-directory: React
@@ -99,10 +118,12 @@ jobs:
     timeout-minutes: 60
     steps:
     - name: Get sources
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Use Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
 
     - name: Restore npm cache
       uses: actions/cache@v3
@@ -113,7 +134,12 @@ jobs:
 
     - name: Run npm install
       working-directory: Vue
-      run: npm install --no-audit --no-fund
+      run: npm install --no-fund
+
+    - name: Security audit
+      working-directory: Vue
+      run: npm audit --audit-level=high
+      continue-on-error: true
 
     - name: Lint Vue
       working-directory: Vue
