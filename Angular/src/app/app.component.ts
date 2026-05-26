@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { type DxChatTypes } from 'devextreme-angular/ui/chat';
+import { DxButtonModule } from 'devextreme-angular/ui/button';
+import { DxChatModule } from 'devextreme-angular/ui/chat';
 import { DataSource } from 'devextreme-angular/common/data';
 import { loadMessages } from 'devextreme/localization';
 import { AppService } from './app.service';
@@ -10,6 +13,8 @@ import { REGENERATION_TEXT } from './data';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  standalone: true,
+  imports: [CommonModule, DxButtonModule, DxChatModule],
 })
 export class AppComponent implements OnInit {
   dataSource: DataSource | [];
