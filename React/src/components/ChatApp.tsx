@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { loadMessages } from 'devextreme/localization';
 import Chat, { type ChatTypes } from 'devextreme-react/chat';
-import { appService } from '../ChatService';
-import MessageTemplate from './MessageTemplate';
-import { CHAT_DISABLED_CLASS, user as chatUser } from '../data.ts';
+import { appService } from '../ChatService.tsx';
+import MessageTemplate from './MessageTemplate.tsx';
+import { CHAT_DISABLED_CLASS, user as chatUser } from '../data';
 
 export default function ChatApp(): JSX.Element {
   const user = chatUser;
