@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 export default [
   {
-    ignores: ['node_modules/**', 'build/**', 'dist/**', 'eslint.config.js', '*.config.ts', 'stylelint.config.mjs'],
+    ignores: ['node_modules/**', 'build/**', 'dist/**', 'eslint.config.js', '*.config.ts', 'stylelint.config.mjs', 'src/**/*.test.tsx', 'src/**/*.test.ts'],
   },
   ...spellCheck,
   ...reactConfig,

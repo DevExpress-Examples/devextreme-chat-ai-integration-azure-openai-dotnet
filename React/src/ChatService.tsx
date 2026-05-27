@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import notify from 'devextreme/ui/notify';
 import {
   ALERT_TIMEOUT, assistant, CHAT_SERVER_URL, REGENERATION_TEXT,
-} from './data.ts';
+} from './data';
 
 interface MessageAuthor {
   id?: string | number | undefined;
@@ -177,4 +177,5 @@ class AppService {
   }
 }
 
-export const appService = new AppService();
+const appService = new AppService();
+export default appService;

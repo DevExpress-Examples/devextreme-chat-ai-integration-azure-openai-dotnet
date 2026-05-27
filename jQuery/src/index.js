@@ -110,7 +110,7 @@ $(() => {
         // eslint-disable-next-line spellcheck/spell-checker
         dataSource.store().push([{ type: 'insert', data: aiMessage }]);
       }, 200);
-    } catch (err) {
+    } catch {
       component.option({ typingUsers: [] });
       alertLimitReached(component);
     } finally {
