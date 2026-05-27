@@ -13,8 +13,7 @@ import { REGENERATION_TEXT } from './data';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  standalone: true,
-  imports: [CommonModule, DxButtonModule, DxChatModule, NgIf, AsyncPipe],
+  imports: [CommonModule, DxButtonModule, DxChatModule],
 })
 export class AppComponent implements OnInit {
   dataSource: DataSource | [];
