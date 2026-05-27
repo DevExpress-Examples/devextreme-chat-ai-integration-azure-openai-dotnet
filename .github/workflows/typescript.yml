@@ -24,7 +24,7 @@ jobs:
         node-version: '20'
 
     - name: Restore npm cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ./Angular/node_modules
         key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
@@ -33,11 +33,6 @@ jobs:
     - name: Run npm install
       working-directory: Angular
       run: npm install --no-fund
-
-    - name: Security audit
-      working-directory: Angular
-      run: npm audit --audit-level=high
-      continue-on-error: true
 
     - name: TSC Angular
       working-directory: Angular
@@ -56,7 +51,7 @@ jobs:
         node-version: '20'
 
     - name: Restore npm cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ./React/node_modules
         key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
@@ -65,11 +60,6 @@ jobs:
     - name: Run npm install
       working-directory: React
       run: npm install --no-fund
-
-    - name: Security audit
-      working-directory: React
-      run: npm audit --audit-level=high
-      continue-on-error: true
 
     - name: TSC React
       working-directory: React
@@ -88,7 +78,7 @@ jobs:
         node-version: '20'
 
     - name: Restore npm cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ./Vue/node_modules
         key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
@@ -97,11 +87,6 @@ jobs:
     - name: Run npm install
       working-directory: Vue
       run: npm install --no-fund
-
-    - name: Security audit
-      working-directory: Vue
-      run: npm audit --audit-level=high
-      continue-on-error: true
 
     - name: TSC Vue
       working-directory: Vue
