@@ -1,4 +1,3 @@
-export default {
-  extends: ['stylelint-config-standard'],
-  rules: {},
-};
+import stylelintrc from 'eslint-config-devextreme/stylelintrc';
+
+export default stylelintrc;

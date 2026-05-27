@@ -1,6 +1,6 @@
-import tsParser from '@typescript-eslint/parser';
 import spellCheck from 'eslint-config-devextreme/spell-check';
 import vueConfig from 'eslint-config-devextreme/vue';
+import tsParser from '@typescript-eslint/parser';
 
 export default [
   {
