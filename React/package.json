@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 5050",
+    "prebuild": "devextreme-license --out src/devextreme-license.ts --force",
     "build": "tsc -b && vite build",
     "test": "vitest",
     "test:watch": "vitest --watch",
