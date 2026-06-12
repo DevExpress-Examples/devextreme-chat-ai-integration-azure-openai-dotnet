@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { type DxChatTypes } from 'devextreme-angular/ui/chat';
@@ -13,6 +13,7 @@ import { REGENERATION_TEXT } from './data';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [CommonModule, DxButtonModule, DxChatModule],
 })
 export class AppComponent implements OnInit {
