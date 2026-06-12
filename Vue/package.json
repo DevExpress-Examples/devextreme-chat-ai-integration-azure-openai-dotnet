@@ -14,8 +14,8 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
-    "devextreme": "^25.2.3",
-    "devextreme-vue": "^25.2.3",
+    "devextreme": "26.1.2-beta",
+    "devextreme-vue": "26.1.2-beta",
     "html-react-parser": "^5.2.7",
     "rehype-stringify": "^10.0.1",
     "remark-parse": "^11.0.0",
