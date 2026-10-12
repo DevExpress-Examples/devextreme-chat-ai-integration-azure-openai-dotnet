@@ -37,6 +37,23 @@
         const response = await fetch('Chat/GetUserMessages');
         return await response.json();
     }
+    async function getResponseError(response) {
+        const body = await response.text();
+        if (body) {
+            try {
+                const problem = JSON.parse(body);
+                return problem.detail || problem.title || body;
+            } catch {
+                return body;
+            }
+        }
+        return response.statusText || `Request failed (${response.status})`;
+    }
+    function getErrorMessage(error) {
+        if (error instanceof Error) return error.message;
+        if (typeof error === "string") return error;
+        return "Unknown error";
+    }
     async function getAIResponse(message, regenerate = false) {
         const response = await fetch(`Chat/GetAIResponse?regenerate=${regenerate}`, {
             method: "POST",
@@ -45,6 +62,9 @@
             },
             body: JSON.stringify(message)
         });
+        if (!response.ok) {
+            throw new Error(await getResponseError(response));
+        }
         return await response.json();
     }
 
@@ -72,7 +92,7 @@
             }, 200);
         } catch (err) {
             component.option({ typingUsers: [] });
-            alertLimitReached(component);
+            alertError(component, getErrorMessage(err));
         } finally {
             toggleDisabledState(component, false, event);
         }
@@ -88,10 +108,10 @@
             event?.target.focus();
         }
     };
-    function alertLimitReached(chat) {
+    function alertError(chat, message) {
         chat.option({
             alerts: [{
-                message: "Request limit reached, try again in a minute.",
+                message,
             }],
         });
 
@@ -127,9 +147,9 @@
         try {
             const aiMessage = await getAIResponse(lastMessage, true);
             updateLastMessage(chat, aiMessage);
-        } catch {
+        } catch (err) {
             updateLastMessage(chat, lastMessage);
-            alertLimitReached(chat);
+            alertError(chat, getErrorMessage(err));
         } finally {
             toggleDisabledState(chat, false);
         }

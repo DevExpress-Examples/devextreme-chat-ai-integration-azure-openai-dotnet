@@ -13,6 +13,25 @@ $(() => {
     id: 'user',
   };
 
+  async function getResponseError(response) {
+    const body = await response.text();
+    if (body) {
+      try {
+        const problem = JSON.parse(body);
+        return problem.detail || problem.title || body;
+      } catch {
+        return body;
+      }
+    }
+    return response.statusText || `Request failed (${response.status})`;
+  }
+
+  function getErrorMessage(error) {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    return 'Unknown error';
+  }
+
   DevExpress.localization.loadMessages({
     en: {
       'dxChat-emptyListMessage': 'Chat is Empty',
@@ -79,8 +98,7 @@ $(() => {
       },
     );
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to get AI response ${errorText}`);
+      throw new Error(await getResponseError(response));
     }
     return response.json();
   }
@@ -112,7 +130,7 @@ $(() => {
       }, 200);
     } catch (err) {
       component.option({ typingUsers: [] });
-      alertLimitReached(component);
+      alertError(component, getErrorMessage(err));
     } finally {
       toggleDisabledState(component, false, event);
     }
@@ -128,11 +146,11 @@ $(() => {
     }
   }
 
-  function alertLimitReached(chat) {
+  function alertError(chat, message) {
     chat.option({
       alerts: [
         {
-          message: 'Request limit reached, try again in a minute.',
+          message,
         },
       ],
     });
@@ -173,9 +191,9 @@ $(() => {
     try {
       const newAIMessage = await getAIResponse(lastMessage, true);
       updateLastMessage(chat, newAIMessage);
-    } catch {
+    } catch (err) {
       updateLastMessage(chat, lastMessage);
-      alertLimitReached(chat);
+      alertError(chat, getErrorMessage(err));
     } finally {
       toggleDisabledState(chat, false);
     }

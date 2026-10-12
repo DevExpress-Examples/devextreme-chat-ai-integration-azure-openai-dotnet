@@ -25,6 +25,25 @@ interface Message {
     author?: MessageAuthor;
 }
 
+async function getResponseError(response: Response): Promise<string> {
+  const body = await response.text();
+  if (body) {
+    try {
+      const problem = JSON.parse(body) as { detail?: string; title?: string };
+      return problem.detail || problem.title || body;
+    } catch {
+      return body;
+    }
+  }
+  return response.statusText || `Request failed (${response.status})`;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Unknown error';
+}
+
 export function useChatLogic() {
   const dataSource = ref<DataSource | null>(null);
   const user = ref({ id: 'user' });
@@ -86,8 +105,7 @@ export function useChatLogic() {
       },
     );
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to get AI response ${errorText}`);
+      throw new Error(await getResponseError(response));
     }
     return response.json();
   };
@@ -105,8 +123,8 @@ export function useChatLogic() {
     }]);
   };
 
-  const alertLimitReached = (error: any) => {
-    setAlerts([{ message: error.message }]);
+  const alertError = (error: unknown) => {
+    setAlerts([{ message: getErrorMessage(error) }]);
     setTimeout(() => setAlerts([]), ALERT_TIMEOUT);
   };
 
@@ -124,7 +142,7 @@ export function useChatLogic() {
       if (lastMessage) {
         updateLastMessage(lastMessage);
       }
-      alertLimitReached(error);
+      alertError(error);
     }
   };
 
@@ -172,7 +190,7 @@ export function useChatLogic() {
     } catch (err) {
       (event?.target as HTMLElement).focus();
       typingUsers.value = [];
-      alertLimitReached(err);
+      alertError(err);
     } finally {
       (event?.target as HTMLElement).focus();
       toggleDisabledState(false);

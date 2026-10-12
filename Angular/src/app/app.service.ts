@@ -23,6 +23,25 @@ interface Message {
   author?: MessageAuthor;
 }
 
+async function getResponseError(response: Response): Promise<string> {
+  const body = await response.text();
+  if (body) {
+    try {
+      const problem = JSON.parse(body) as { detail?: string; title?: string };
+      return problem.detail || problem.title || body;
+    } catch {
+      return body;
+    }
+  }
+  return response.statusText || `Request failed (${response.status})`;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Unknown error';
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -111,8 +130,7 @@ export class AppService {
       },
     );
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to get AI response ${errorText}`);
+      throw new Error(await getResponseError(response));
     }
     return response.json();
   }
@@ -129,10 +147,10 @@ export class AppService {
     }]);
   }
 
-  alertLimitReached(error: any): void {
+  alertError(error: unknown): void {
     this.setAlerts([
       {
-        message: error.message,
+        message: getErrorMessage(error),
       },
     ]);
 
@@ -156,7 +174,7 @@ export class AppService {
       if (lastMessage) {
         this.updateLastMessage(lastMessage);
       }
-      this.alertLimitReached(error);
+      this.alertError(error);
     }
   }
 
@@ -194,7 +212,7 @@ export class AppService {
     } catch (err) {
       (event?.target as HTMLElement).focus();
       this.typingUsersSubject.next([]);
-      this.alertLimitReached(err);
+      this.alertError(err);
     } finally {
       (event?.target as HTMLElement).focus();
     }
