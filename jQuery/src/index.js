@@ -105,7 +105,7 @@ $(() => {
 
   async function onMessageEntered(e) {
     const { component, message, event } = e;
-    if (component.option('alerts').length) return;
+    clearAlerts(component);
 
     message.id = Date.now().toString();
     if (!message.timestamp) {
@@ -146,7 +146,15 @@ $(() => {
     }
   }
 
+  let alertTimeout;
+
+  function clearAlerts(chat) {
+    clearTimeout(alertTimeout);
+    chat.option({ alerts: [] });
+  }
+
   function alertError(chat, message) {
+    clearTimeout(alertTimeout);
     chat.option({
       alerts: [
         {
@@ -155,7 +163,7 @@ $(() => {
       ],
     });
 
-    setTimeout(() => {
+    alertTimeout = setTimeout(() => {
       chat.option({ alerts: [] });
     }, ALERT_TIMEOUT);
   }
@@ -200,10 +208,7 @@ $(() => {
   }
 
   function onRegenerateButtonClick(chat) {
-    if (chat.option('alerts').length) {
-      return;
-    }
-
+    clearAlerts(chat);
     updateLastMessage(chat);
     regenerate(chat);
   }

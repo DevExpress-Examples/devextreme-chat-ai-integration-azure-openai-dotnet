@@ -123,9 +123,17 @@ export function useChatLogic() {
     }]);
   };
 
+  let alertTimeout: ReturnType<typeof setTimeout> | undefined;
+
   const alertError = (error: unknown) => {
+    clearTimeout(alertTimeout);
     setAlerts([{ message: getErrorMessage(error) }]);
-    setTimeout(() => setAlerts([]), ALERT_TIMEOUT);
+    alertTimeout = setTimeout(() => setAlerts([]), ALERT_TIMEOUT);
+  };
+
+  const clearAlerts = () => {
+    clearTimeout(alertTimeout);
+    setAlerts([]);
   };
 
   const setAlerts = (newAlerts: DxChatTypes.Alert[]) => {
@@ -172,7 +180,7 @@ export function useChatLogic() {
     let { message, event } = e;
     toggleDisabledState(true);
     (event?.target as HTMLElement).blur();
-    if (alerts.value.length) return;
+    clearAlerts();
 
     message.id = Date.now().toString();
     if (!message.timestamp) {

@@ -52,6 +52,8 @@ export class AppService {
 
   alerts: DxChatTypes.Alert[] = [];
 
+  private alertTimeout?: ReturnType<typeof setTimeout>;
+
   arrayStore: ArrayStore | undefined;
 
   dataSource: DataSource | undefined;
@@ -148,15 +150,21 @@ export class AppService {
   }
 
   alertError(error: unknown): void {
+    clearTimeout(this.alertTimeout);
     this.setAlerts([
       {
         message: getErrorMessage(error),
       },
     ]);
 
-    setTimeout(() => {
+    this.alertTimeout = setTimeout(() => {
       this.setAlerts([]);
     }, ALERT_TIMEOUT);
+  }
+
+  clearAlerts(): void {
+    clearTimeout(this.alertTimeout);
+    this.setAlerts([]);
   }
 
   setAlerts(alerts: DxChatTypes.Alert[]): void {
@@ -192,7 +200,7 @@ export class AppService {
   async onMessageEntered(e: DxChatTypes.MessageEnteredEvent): Promise<void> {
     let { message, event } = e;
     (event?.target as HTMLElement).blur();
-    if (this.alerts.length) return;
+    this.clearAlerts();
 
     message.id = Date.now().toString();
     if (!message.timestamp) {

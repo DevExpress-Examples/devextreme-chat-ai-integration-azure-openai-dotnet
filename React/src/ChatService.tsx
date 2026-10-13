@@ -40,6 +40,8 @@ function getErrorMessage(error: unknown): string {
 class AppService {
   alerts: ChatTypes.Alert[] = [];
 
+  private alertTimeout?: ReturnType<typeof setTimeout>;
+
   arrayStore?: ArrayStore;
 
   dataSource?: DataSource;
@@ -134,15 +136,21 @@ class AppService {
   }
 
   alertError(error: unknown): void {
+    clearTimeout(this.alertTimeout);
     this.setAlerts([
       {
         message: getErrorMessage(error),
       },
     ]);
 
-    setTimeout((): void => {
+    this.alertTimeout = setTimeout((): void => {
       this.setAlerts([]);
     }, ALERT_TIMEOUT);
+  }
+
+  clearAlerts(): void {
+    clearTimeout(this.alertTimeout);
+    this.setAlerts([]);
   }
 
   setAlerts(alerts: ChatTypes.Alert[]): void {
@@ -167,7 +175,7 @@ class AppService {
   async onMessageEntered(e: ChatTypes.MessageEnteredEvent, setDisabled: Function): Promise<void> {
     let { message, event } = e;
     (event?.target as HTMLElement).blur();
-    if (this.alerts.length) return;
+    this.clearAlerts();
 
     message.id = Date.now().toString();
     if (!message.timestamp) {
