@@ -25,15 +25,7 @@ interface Message {
 
 async function getResponseError(response: Response): Promise<string> {
   const body = await response.text();
-  if (body) {
-    try {
-      const problem = JSON.parse(body) as { detail?: string; title?: string };
-      return problem.detail || problem.title || body;
-    } catch {
-      return body;
-    }
-  }
-  return response.statusText || `Request failed (${response.status})`;
+  return response.statusText || body || `Request failed (${response.status})`;
 }
 
 function getErrorMessage(error: unknown): string {
