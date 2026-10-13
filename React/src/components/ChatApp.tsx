@@ -28,6 +28,7 @@ export default function ChatApp(): JSX.Element {
   }, []);
 
   const onRegenerateButtonClick = useCallback(async (): Promise<void> => {
+    appService.clearAlerts();
     setDisabled(true);
     appService.updateLastMessage();
 

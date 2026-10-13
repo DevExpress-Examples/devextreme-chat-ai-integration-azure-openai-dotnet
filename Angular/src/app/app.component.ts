@@ -68,6 +68,7 @@ export class AppComponent implements OnInit {
   }
 
   async onRegenerateButtonClick(): Promise<void> {
+    this.appService.clearAlerts();
     this.appService.updateLastMessage();
     this.isDisabled = true;
 
