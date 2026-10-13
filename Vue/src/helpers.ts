@@ -212,6 +212,7 @@ export function useChatLogic() {
   };
 
   const onRegenerateButtonClick = async() => {
+    clearAlerts();
     updateLastMessage();
     toggleDisabledState(true);
     try {
