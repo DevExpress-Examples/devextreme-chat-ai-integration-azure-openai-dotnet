@@ -40,7 +40,6 @@ $(() => {
     },
   });
 
-  // Initialize Chat component
   $('#chat').dxChat({
     id: 'chat',
     user: currentUser,

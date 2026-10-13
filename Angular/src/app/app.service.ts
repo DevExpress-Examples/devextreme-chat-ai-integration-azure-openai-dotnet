@@ -19,7 +19,7 @@ interface MessageAuthor {
 interface Message {
   id?: string | number | undefined;
   text?: string;
-  timestamp?: string | number | Date | undefined; // или Date если будете парсить
+  timestamp?: string | number | Date | undefined;
   author?: MessageAuthor;
 }
 

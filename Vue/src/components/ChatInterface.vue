@@ -62,7 +62,6 @@ const {
   isDisabled
 } = useChatLogic();
 
-// Initialize component
 onMounted(() => {
   loadMessage();
   initDataSource();
