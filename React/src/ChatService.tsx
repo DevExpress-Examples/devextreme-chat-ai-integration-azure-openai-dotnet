@@ -14,12 +14,33 @@ interface MessageAuthor {
 interface Message {
   id?: string | number | undefined;
   text?: string;
-  timestamp?: string | number | Date | undefined; // или Date если будете парсить
+  timestamp?: string | number | Date | undefined;
   author?: MessageAuthor;
+}
+
+async function getResponseError(response: Response): Promise<string> {
+  const body = await response.text();
+  if (body) {
+    try {
+      const problem = JSON.parse(body);
+      return problem.detail || problem.title || body;
+    } catch {
+      return response.statusText || body || `Request failed (${response.status})`;
+    }
+  }
+  return response.statusText || `Request failed (${response.status})`;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Unknown error';
 }
 
 class AppService {
   alerts: ChatTypes.Alert[] = [];
+
+  private alertTimeout?: ReturnType<typeof setTimeout>;
 
   arrayStore?: ArrayStore;
 
@@ -97,8 +118,7 @@ class AppService {
       },
     );
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to get AI response ${errorText}`);
+      throw new Error(await getResponseError(response));
     }
     return response.json();
   }
@@ -115,16 +135,22 @@ class AppService {
     }]);
   }
 
-  alertLimitReached(error: any): void {
+  alertError(error: unknown): void {
+    clearTimeout(this.alertTimeout);
     this.setAlerts([
       {
-        message: error.message,
+        message: getErrorMessage(error),
       },
     ]);
 
-    setTimeout((): void => {
+    this.alertTimeout = setTimeout((): void => {
       this.setAlerts([]);
     }, ALERT_TIMEOUT);
+  }
+
+  clearAlerts(): void {
+    clearTimeout(this.alertTimeout);
+    this.setAlerts([]);
   }
 
   setAlerts(alerts: ChatTypes.Alert[]): void {
@@ -142,14 +168,14 @@ class AppService {
       if (lastMessage) {
         this.updateLastMessage(lastMessage);
       }
-      this.alertLimitReached(error);
+      this.alertError(error);
     }
   }
 
   async onMessageEntered(e: ChatTypes.MessageEnteredEvent, setDisabled: Function): Promise<void> {
     let { message, event } = e;
     (event?.target as HTMLElement).blur();
-    if (this.alerts.length) return;
+    this.clearAlerts();
 
     message.id = Date.now().toString();
     if (!message.timestamp) {
@@ -169,7 +195,7 @@ class AppService {
     } catch (err) {
       (event?.target as HTMLElement).focus();
       this.typingUsersSubject.next([]);
-      this.alertLimitReached(err);
+      this.alertError(err);
     } finally {
       (event?.target as HTMLElement).focus();
       setDisabled(false);

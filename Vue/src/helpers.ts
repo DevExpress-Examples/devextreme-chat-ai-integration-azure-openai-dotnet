@@ -21,8 +21,27 @@ interface MessageAuthor {
 interface Message {
     id?: string | number | undefined;
     text?: string;
-    timestamp?: string | number | Date | undefined; // или Date если будете парсить
+    timestamp?: string | number | Date | undefined;
     author?: MessageAuthor;
+}
+
+async function getResponseError(response: Response): Promise<string> {
+  const body = await response.text();
+  if (body) {
+    try {
+      const problem = JSON.parse(body);
+      return problem.detail || problem.title || body;
+    } catch {
+      return response.statusText || body || `Request failed (${response.status})`;
+    }
+  }
+  return response.statusText || `Request failed (${response.status})`;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Unknown error';
 }
 
 export function useChatLogic() {
@@ -86,8 +105,7 @@ export function useChatLogic() {
       },
     );
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to get AI response ${errorText}`);
+      throw new Error(await getResponseError(response));
     }
     return response.json();
   };
@@ -105,9 +123,17 @@ export function useChatLogic() {
     }]);
   };
 
-  const alertLimitReached = (error: any) => {
-    setAlerts([{ message: error.message }]);
-    setTimeout(() => setAlerts([]), ALERT_TIMEOUT);
+  let alertTimeout: ReturnType<typeof setTimeout> | undefined;
+
+  const alertError = (error: unknown) => {
+    clearTimeout(alertTimeout);
+    setAlerts([{ message: getErrorMessage(error) }]);
+    alertTimeout = setTimeout(() => setAlerts([]), ALERT_TIMEOUT);
+  };
+
+  const clearAlerts = () => {
+    clearTimeout(alertTimeout);
+    setAlerts([]);
   };
 
   const setAlerts = (newAlerts: DxChatTypes.Alert[]) => {
@@ -124,7 +150,7 @@ export function useChatLogic() {
       if (lastMessage) {
         updateLastMessage(lastMessage);
       }
-      alertLimitReached(error);
+      alertError(error);
     }
   };
 
@@ -154,7 +180,7 @@ export function useChatLogic() {
     let { message, event } = e;
     toggleDisabledState(true);
     (event?.target as HTMLElement).blur();
-    if (alerts.value.length) return;
+    clearAlerts();
 
     message.id = Date.now().toString();
     if (!message.timestamp) {
@@ -172,7 +198,7 @@ export function useChatLogic() {
     } catch (err) {
       (event?.target as HTMLElement).focus();
       typingUsers.value = [];
-      alertLimitReached(err);
+      alertError(err);
     } finally {
       (event?.target as HTMLElement).focus();
       toggleDisabledState(false);
@@ -186,6 +212,7 @@ export function useChatLogic() {
   };
 
   const onRegenerateButtonClick = async() => {
+    clearAlerts();
     updateLastMessage();
     toggleDisabledState(true);
     try {
