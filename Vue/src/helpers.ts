@@ -27,7 +27,15 @@ interface Message {
 
 async function getResponseError(response: Response): Promise<string> {
   const body = await response.text();
-  return response.statusText || body || `Request failed (${response.status})`;
+  if (body) {
+    try {
+      const problem = JSON.parse(body);
+      return problem.detail || problem.title || body;
+    } catch {
+      return response.statusText || body || `Request failed (${response.status})`;
+    }
+  }
+  return response.statusText || `Request failed (${response.status})`;
 }
 
 function getErrorMessage(error: unknown): string {
